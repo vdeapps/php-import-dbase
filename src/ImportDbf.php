@@ -5,8 +5,8 @@
 
 namespace vdeApps\Import;
 
-use XBase\Table;
-
+use org\majkel\dbase\Table;
+use vdeApps\phpCore\Helper;
 
 class ImportDbf extends ImportAbstract {
     
@@ -20,37 +20,39 @@ class ImportDbf extends ImportAbstract {
      * @throws \Exception
      */
     public function read() {
-        
-        $this->dbf = new Table($this->getFilename(), $this->getDbfColumns(), $this->getDbfCharset());
-        
-        /*
-         * Add header columns
-         */
-        $headerCols = array_keys($this->dbf->getColumns());
-        $this->addRow($headerCols);
-        
+    
         /*
          * Convert \DateTime to String
          */
         $this->addPlugins(function ($row) {
             foreach ($row as $item => &$value) {
+            
                 if (is_a($value, \DateTime::class)) {
                     /** @var \DateTime $value */
                     $value = $value->format('Y-m-d H:i:s.0');
                 }
+                else{
+                    if (!is_null($this->getDbfCharset())) {
+                        
+                        // charset from DBF to charset database
+                        $value = iconv($this->getDbfCharset(), $this->getCharset(), $value);
+                    }
+                }
             }
-            
+        
             return $row;
         });
         
-        while ($record = $this->dbf->nextRecord()) {
-            $row = [];
-            foreach ($headerCols as $key) {
-                $row[] = $record->forceGetString($key);
-            }
+        $this->dbf = Table::fromFile($this->getFilename());
+        
+        $headerCols = $this->dbf->getFieldsNames();
+        $this->addRow($headerCols);
+    
+        foreach ($this->dbf as $record) {
+        
+            $row = $record->toArray();
             $this->addRow($row);
         }
-        $this->dbf->close();
         
         /** @var ImportInterfaceAbstract $this */
         return $this;

@@ -34,7 +34,7 @@
         "php": ">=7.0.0",
         "doctrine/dbal": "^2.5",
         "vdeapps/php-import": "^1.0",
-        "hisamu/php-xbase": "^1.0"
+        "org.majkel/dbase": "^1.1"
     },
     "require-dev": {
         "squizlabs/php_codesniffer": "3.*"

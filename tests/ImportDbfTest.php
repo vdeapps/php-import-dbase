@@ -40,8 +40,8 @@ class ImportDbfTest extends TestCase{
         $this->createDb();
     
     
-        $from = 'cp863';
-        $to = 'UTF-8';
+        $charsetDbf = 'cp863';
+        $charsetDb = 'utf8';
     
         $localFilename = __DIR__ . '/files/test.DBF';
         $tablename = 'import_dbf';
@@ -49,7 +49,8 @@ class ImportDbfTest extends TestCase{
     
         $imp
             ->fromFile($localFilename)
-            ->setDbfCharset($from)
+            ->setDbfCharset($charsetDbf)
+            ->setCharset($charsetDb)
             //                ->setLimit(10)
             // Destination table
             ->setTable($tablename)
