@@ -12,7 +12,8 @@ class ImportDbf extends ImportAbstract {
     
     /** @var Table */
     protected $dbf = null;
-    private $dbfCharset = null;
+    private $dbfCharsetFrom = null;
+    private $dbfCharsetTo = 'UTF-8';
     private $dbfColumns = null;
     
     /**
@@ -35,7 +36,7 @@ class ImportDbf extends ImportAbstract {
                     if (!is_null($this->getDbfCharset())) {
                         
                         // charset from DBF to charset database
-                        $value = iconv($this->getDbfCharset(), $this->getCharset(), $value);
+                        $value = iconv($this->getDbfCharset(), $this->dbfCharsetTo,  $value);
                     }
                 }
             }
@@ -54,7 +55,6 @@ class ImportDbf extends ImportAbstract {
             $this->addRow($row);
         }
         
-        /** @var ImportInterfaceAbstract $this */
         return $this;
         
     }
@@ -69,7 +69,7 @@ class ImportDbf extends ImportAbstract {
     /**
      * @param null $columns
      *
-     * @return ImportDbf
+     * @return $this
      */
     public function setDbfColumns($columns = null) {
         $this->dbfColumns = $columns;
@@ -81,16 +81,19 @@ class ImportDbf extends ImportAbstract {
      * @return null
      */
     public function getDbfCharset() {
-        return $this->dbfCharset;
+        return $this->dbfCharsetFrom;
     }
     
     /**
-     * @param string|null $charset
+     * For the conversion before insert into database
+     * @param null   $from
+     * @param string $to
      *
-     * @return ImportDbf
+     * @return $this
      */
-    public function setDbfCharset($charset = null) {
-        $this->dbfCharset = $charset;
+    public function setDbfCharset($from=null, $to='UTF-8') {
+        $this->dbfCharsetFrom = $from;
+        $this->dbfCharsetTo = $to;
         
         return $this;
     }
