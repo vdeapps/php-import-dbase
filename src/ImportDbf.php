@@ -3,9 +3,8 @@
  * Copyright (c) vdeApps 2018
  */
 
-namespace App\Models;
+namespace vdeApps\Import;
 
-use vdeApps\Import\ImportAbstract;
 use XBase\Table;
 
 
