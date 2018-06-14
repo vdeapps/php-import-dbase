@@ -6,64 +6,70 @@
 namespace vdeApps\Import;
 
 use org\majkel\dbase\Table;
-use vdeApps\phpCore\Helper;
 
-class ImportDbf extends ImportAbstract {
+class ImportDbf extends ImportAbstract
+{
     
     /** @var Table */
     protected $dbf = null;
     private $dbfCharsetFrom = null;
     private $dbfCharsetTo = 'UTF-8';
-    private $dbfColumns = null;
+    private $columns = null;
     
     /**
      * @return $this|mixed
      * @throws \Exception
      */
-    public function read() {
-    
+    public function read()
+    {
+        
         /*
          * Convert \DateTime to String
          */
-        $this->addPlugins(function ($row) {
+        $this->addPlugins(function ($row)
+        {
             foreach ($row as $item => &$value) {
-            
                 if (is_a($value, \DateTime::class)) {
                     /** @var \DateTime $value */
                     $value = $value->format('Y-m-d H:i:s.0');
-                }
-                else{
+                } else {
                     if (!is_null($this->getDbfCharset())) {
-                        
                         // charset from DBF to charset database
-                        $value = iconv($this->getDbfCharset(), $this->dbfCharsetTo,  $value);
+                        $value = iconv($this->getDbfCharset(), $this->dbfCharsetTo, $value);
                     }
                 }
             }
-        
+            
             return $row;
         });
         
         $this->dbf = Table::fromFile($this->getFilename());
         
         $headerCols = $this->dbf->getFieldsNames();
-        $this->addRow($headerCols);
-    
-        foreach ($this->dbf as $record) {
         
+        if (!is_null($this->getColumns())) {
+            $headerCols = array_intersect($headerCols, $this->getColumns());
+        }
+        $this->addRow($headerCols);
+        
+        foreach ($this->dbf as $record) {
             $row = $record->toArray();
+            
+            if (!is_null($this->getColumns())) {
+                $row = array_intersect_key($row, array_flip($this->getColumns()));
+            }
             $this->addRow($row);
         }
         
         return $this;
-        
     }
     
     /**
      * @return null
      */
-    public function getDbfColumns() {
-        return $this->dbfColumns;
+    public function getColumns()
+    {
+        return $this->columns;
     }
     
     /**
@@ -71,8 +77,9 @@ class ImportDbf extends ImportAbstract {
      *
      * @return $this
      */
-    public function setDbfColumns($columns = null) {
-        $this->dbfColumns = $columns;
+    public function setColumns($columns = null)
+    {
+        $this->columns = $columns;
         
         return $this;
     }
@@ -80,7 +87,8 @@ class ImportDbf extends ImportAbstract {
     /**
      * @return null
      */
-    public function getDbfCharset() {
+    public function getDbfCharset()
+    {
         return $this->dbfCharsetFrom;
     }
     
@@ -91,7 +99,8 @@ class ImportDbf extends ImportAbstract {
      *
      * @return $this
      */
-    public function setDbfCharset($from=null, $to='UTF-8') {
+    public function setDbfCharset($from = null, $to = 'UTF-8')
+    {
         $this->dbfCharsetFrom = $from;
         $this->dbfCharsetTo = $to;
         
@@ -101,7 +110,8 @@ class ImportDbf extends ImportAbstract {
     /**
      * @return Table
      */
-    public function getDbf() {
+    public function getDbf()
+    {
         return $this->dbf;
     }
 }
