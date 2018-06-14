@@ -17,11 +17,15 @@ class ImportDbf extends ImportAbstract
     private $columns = null;
     
     /**
-     * @return $this|mixed
+     * ImportDbf constructor.
+     *
+     * @param \Doctrine\DBAL\Connection $db
+     *
      * @throws \Exception
      */
-    public function read()
+    public function __construct($db)
     {
+        parent::__construct($db);
         
         /*
          * Convert \DateTime to String
@@ -42,7 +46,22 @@ class ImportDbf extends ImportAbstract
             
             return $row;
         });
-        
+    }
+    
+    /**
+     * @return null
+     */
+    public function getDbfCharset()
+    {
+        return $this->dbfCharsetFrom;
+    }
+    
+    /**
+     * @return $this|mixed
+     * @throws \Exception
+     */
+    public function read()
+    {
         $this->dbf = Table::fromFile($this->getFilename());
         
         $headerCols = $this->dbf->getFieldsNames();
@@ -50,7 +69,7 @@ class ImportDbf extends ImportAbstract
         if (!is_null($this->getColumns())) {
             $headerCols = array_intersect($headerCols, $this->getColumns());
         }
-        $this->addRow($headerCols);
+        $this->addRow($headerCols, true);
         
         foreach ($this->dbf as $record) {
             $row = $record->toArray();
@@ -58,7 +77,9 @@ class ImportDbf extends ImportAbstract
             if (!is_null($this->getColumns())) {
                 $row = array_intersect_key($row, array_flip($this->getColumns()));
             }
-            $this->addRow($row);
+            if (false===$this->addRow($row)){
+                break;
+            }
         }
         
         return $this;
@@ -85,15 +106,8 @@ class ImportDbf extends ImportAbstract
     }
     
     /**
-     * @return null
-     */
-    public function getDbfCharset()
-    {
-        return $this->dbfCharsetFrom;
-    }
-    
-    /**
      * For the conversion before insert into database
+     *
      * @param null   $from
      * @param string $to
      *

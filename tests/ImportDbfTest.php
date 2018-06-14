@@ -35,7 +35,7 @@ class ImportDbfTest extends TestCase{
         return $this->conn;
     }
     
-    public function testImport1() {
+    public function _testImport1() {
     
         $this->createDb();
     
@@ -81,5 +81,99 @@ class ImportDbfTest extends TestCase{
         $this->assertEquals(1960, count($imp->getRows()));
     }
     
+    public function testImport2() {
+        
+        $this->createDb();
+        
+        
+        $charsetDbf = 'cp863';
+        $charsetDb = 'utf8';
+        
+        $localFilename = __DIR__ . '/files/test.DBF';
+        $tablename = 'import_dbf';
+        $imp = new ImportDbf($this->conn);
+        
+        $imp
+            ->fromFile($localFilename)
+            ->setDbfCharset($charsetDbf)
+            ->setCharset($charsetDb)
+            //                ->setLimit(10)
+            // Destination table
+            ->setTable($tablename)
+            //Ignore la premiere ligne
+            ->setIgnoreFirstLine(false)
+            // Prend la première ligne comme entête de colonnes
+            ->setHeaderLikeFirstLine(true)
+            ->setLimit(10)
+            // Colonnes personnalisées
+            //                            ->setFields($customFields)
+            // Ajout de champs supplémentaires
+            ->addFields(['calc_iduser', 'calc_ident'])
+            // Ajout de n colonnes
+            //            ->addFields(10)
+            // Ajout d'un plugins
+            ->addPlugins([$imp, 'pluginsNullValue'])
+            // Ajout d'un plugins
+            //                ->addPlugins(function ($rowData) {
+            //                    $rowData['calcIduser'] = 'from plugins:' . $rowData['pkChantier'];
+            //                    $rowData['calcIdent'] = 'from plugins:' . $rowData['uri'];
+            //
+            //                    return $rowData;
+            //                })
+            // required: Lecture/vérification
+            ->read()
+            // Exec import
+            ->import();
+        
+        $this->assertEquals(10, count($imp->getRows()));
+    }
+    
+    
+    public function testImport3() {
+        
+        $this->createDb();
+        
+        
+        $charsetDbf = 'cp863';
+        $charsetDb = 'utf8';
+        
+        $localFilename = __DIR__ . '/files/test.DBF';
+        $tablename = 'import_dbf';
+        $imp = new ImportDbf($this->conn);
+        
+        $imp
+            ->fromFile($localFilename)
+            ->setDbfCharset($charsetDbf)
+            ->setCharset($charsetDb)
+            // Destination table
+            ->setTable($tablename)
+            //Ignore la premiere ligne
+            ->setIgnoreFirstLine(false)
+            // Prend la première ligne comme entête de colonnes
+            ->setHeaderLikeFirstLine(false)
+            ->setLimit(10)
+            // Colonnes personnalisées
+            //                            ->setFields($customFields)
+            // Ajout de champs supplémentaires
+            ->addFields(['calc_iduser', 'calc_ident'])
+            // Ajout de n colonnes
+            //            ->addFields(10)
+            // Ajout d'un plugins
+            ->addPlugins([$imp, 'pluginsNullValue'])
+            // Ajout d'un plugins
+            //                ->addPlugins(function ($rowData) {
+            //                    $rowData['calcIduser'] = 'from plugins:' . $rowData['pkChantier'];
+            //                    $rowData['calcIdent'] = 'from plugins:' . $rowData['uri'];
+            //
+            //                    return $rowData;
+            //                })
+            // required: Lecture/vérification
+            ->read()
+            // Exec import
+            ->import();
+        
+        // 9 because the first line is use to the headers
+        $this->assertEquals(10, count($imp->getRows()));
+    }
     
 }
